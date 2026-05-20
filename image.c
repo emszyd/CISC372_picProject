@@ -4,6 +4,7 @@
 #include <string.h>
 #include "image.h"
 #include <pthread.h>
+#include <stdlib.h>
 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -25,6 +26,12 @@ Matrix algorithms[]={
 };
 
 //struct to hold the data each thread need 
+/* each thread needs to know 
+ * - what image its reading from 
+ * - what image its writing to 
+ * - what filter/kernel its using
+ * - what row it shoudl start on
+ * - what row it should stop before */
 typedef struct{
     Image* srcImage;
     Image* destImage;
@@ -41,8 +48,8 @@ typedef struct{
 //          algorithm: The 3x3 kernel matrix to use for the convolution
 //Returns: The new value for this x,y pixel and bit channel
 uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
-    int px,mx,py,my,i,span;
-    span=srcImage->width*srcImage->bpp;
+    int px,mx,py,my;
+    // int span=srcImage->width*srcImage->bpp;
     // for the edge pixes, just reuse the edge pixel
     px=x+1; py=y+1; mx=x-1; my=y-1;
     if (mx<0) mx=0;
@@ -67,7 +74,7 @@ void* convoluteChunk(void* threadData){
     ThreadData* data = (ThreadData*) threadData;
     int row, pix, bit;
 
-    for (row=data->startRow;row < data->endRow;row++){
+    for (row=data->startRow;row < data->endRow;row++){ //makes each thread repsonsible for for only its assigned chunk
         for (pix=0;pix<data->srcImage->width;pix++){
             for (bit=0;bit<data->srcImage->bpp;bit++){
                 data->destImage->data[Index(pix,row,data->srcImage->width,bit,data->srcImage->bpp)]=getPixelValue(data->srcImage,pix,row,bit,data->algorithm);
@@ -86,9 +93,10 @@ void convolute(Image* srcImage,Image* destImage,Matrix algorithm){
     int numThreads=4;
     pthread_t threads[numThreads];
     ThreadData threadData[numThreads];
-    int i;
+
     int rowsPerThread=srcImage->height/numThreads;
-    for (i=0; i<numThreads; i++){
+
+    for (int i=0; i<numThreads; i++){
         threadData[i].srcImage=srcImage;
         threadData[i].destImage=destImage;
 
@@ -104,12 +112,10 @@ void convolute(Image* srcImage,Image* destImage,Matrix algorithm){
         } 
         pthread_create(&threads[i],NULL,convoluteChunk,&threadData[i]);
     }
-    for (i=0; i<numThreads; i++){
+    for (int i=0; i<numThreads; i++){
         pthread_join(threads[i],NULL);
             }
         }
-
-
 
 
 //Usage: Prints usage information for the program
