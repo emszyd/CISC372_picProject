@@ -1,0 +1,9 @@
+Script started on Tue May 19 21:42:18 2026
+]0;emmaszyd@r1n00.darwin:~/CISC372_picProject[?1034h[emmaszyd@r1n00 CISC372_picProject]$ srun ./image_pthreads pic1.jpg edge [A[emmaszyd@r1n00 CISC372_picProject]$ srun ./image_pthreads pic1.jpg edg[Ke
+Took 6 seconds
+]0;emmaszyd@r1n00.darwin:~/CISC372_picProject[emmaszyd@r1n00 CISC372_picProject]$ srun ./image_openmp pic1.jpg edge  
+Took 7 seconds
+]0;emmaszyd@r1n00.darwin:~/CISC372_picProject[emmaszyd@r1n00 CISC372_picProject]$ exit
+exit
+
+Script done on Tue May 19 21:43:15 2026
